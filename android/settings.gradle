@@ -1,0 +1,3 @@
+rootProject.name = 'tkx'
+
+include ':app'
