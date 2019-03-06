@@ -89,6 +89,7 @@ p {
   height: 40px;
   border:1px solid #cccccc;
   margin: 100px auto;
+  padding-left: 10px;
 }
 .modal .inner-modal .cancel-btn,.modal .inner-modal .confirm-btn {
   display: inline-block;
