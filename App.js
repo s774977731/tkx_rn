@@ -66,12 +66,18 @@ export default class App extends Component<Props> {
       url:'/v1/app/scanningcode/',
       params:{imei}
     });
-    if(!res) return false;
-    let qrcodeContent = HOST + '/' + res.imei;
-    this.setState({qrcode:qrcodeContent});
-    this.timeout = setTimeout(() => {
-      this.handleMakeQrcode(res.imei);
-    }, 2*1000);
+    if(res) {
+      let qrcodeContent = HOST + '/' + res.imei;
+      this.setState({qrcode:qrcodeContent});
+      console.log(res);
+      this.timeout = setTimeout(() => {
+        this.handleMakeQrcode(res.imei);
+      }, 2*1000);
+    }else {
+      this.timeout = setTimeout(() => {
+        this.handleMakeQrcode(imei);
+      }, 2*1000);
+    }
   }
 
   render() {
