@@ -79,6 +79,7 @@ export default class App extends Component<Props> {
     return (
       <View>
         <VideoPlayer
+          autoplay
           loop
           thumbnail={require('./src/images/video_first_screen.png')}
           video={require('./src/videos/propagation.mp4')}
@@ -97,12 +98,12 @@ export default class App extends Component<Props> {
               <Text style={{fontSize: 40,color: '#ffffff'}}>太空侠智能回收</Text>
             </View>
           </View>
-          <View style={{marginHorizontal: 50,justifyContent: 'center',alignItems: 'center'}}>
+          <TouchableOpacity activeOpacity={1} onPress={() => null} onLongPress={() => null} style={{marginHorizontal: 50,justifyContent: 'center',alignItems: 'center'}}>
             <QRCode
               value={this.state.qrcode}
               size={230}/>
             <Text style={{marginTop: 15,color:'#ffffff',fontSize: 22}}>扫一扫二维码 进行关注</Text>
-          </View>
+          </TouchableOpacity>
         </ImageBackground>
         <Modal visible={this.state.modalVisible} transparent={true}>
           <View style={{backgroundColor: 'rgba(0,0,0,0.3)',flex:1,justifyContent: 'center',alignItems: 'center'}}>
