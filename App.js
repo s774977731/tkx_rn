@@ -61,7 +61,6 @@ export default class App extends Component<Props> {
 
   // 获取二维码
   handleMakeQrcode = async (imei) => {
-    let storageImei
     let res = await common.ajax({
       url:'/v1/app/scanningcode/',
       params:{imei}
@@ -71,7 +70,7 @@ export default class App extends Component<Props> {
       this.setState({qrcode:qrcodeContent});
       console.log(res);
       this.timeout = setTimeout(() => {
-        this.handleMakeQrcode(res.imei);
+        this.handleMakeQrcode(res.imei || imei);
       }, 2*1000);
     }else {
       this.timeout = setTimeout(() => {
