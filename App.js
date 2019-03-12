@@ -73,6 +73,8 @@ export default class App extends Component<Props> {
         this.handleMakeQrcode(res.imei || imei);
       }, 2*1000);
     }else {
+      let qrcodeContent = HOST + '/' + imei;
+      this.setState({qrcode:qrcodeContent});
       this.timeout = setTimeout(() => {
         this.handleMakeQrcode(imei);
       }, 2*1000);
