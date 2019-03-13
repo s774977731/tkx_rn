@@ -15,7 +15,7 @@ import {
   TextInput,
   TouchableOpacity
 } from 'react-native';
-import VideoPlayer from './npm/react-native-video-player';
+import VideoPlayer from './npm_package/react-native-video-player.js';
 import QRCode from 'react-native-qrcode';
 import HOST from './src/proxy.config';
 
