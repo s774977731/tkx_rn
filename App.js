@@ -15,7 +15,7 @@ import {
   TextInput,
   TouchableOpacity
 } from 'react-native';
-import VideoPlayer from 'react-native-video-player';
+import VideoPlayer from './npm/react-native-video-player';
 import QRCode from 'react-native-qrcode';
 import HOST from './src/proxy.config';
 
@@ -88,13 +88,14 @@ export default class App extends Component<Props> {
         <VideoPlayer
           autoplay
           loop
+          hideControlsOnStart
           thumbnail={require('./src/images/video_first_screen.png')}
           video={require('./src/videos/propagation.mp4')}
           videoWidth={width}
           videoHeight={height*0.7}
           style={{backgroundColor: '#ffffff'}}
         />
-      <ImageBackground style={{height: height*0.3,flexDirection: 'row'}} source={require('./src/images/bg_bottom.png')} resizeMode="stretch">
+        <ImageBackground style={{height: height*0.3,flexDirection: 'row'}} source={require('./src/images/bg_bottom.png')} resizeMode="stretch">
           <View style={{flex:1,justifyContent: 'center'}}>
             <View style={{flexDirection: 'row',marginLeft: 100}}>
               <Image style={{width: 50,height: 50,marginRight: 10}} source={require('./src/images/dianhua.png')} resizeMode="contain"/>
