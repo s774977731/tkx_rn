@@ -27,7 +27,8 @@ export default class App extends Component<Props> {
     this.state = {
       qrcode:'',
       inputImei:'',
-      modalVisible:false
+      modalVisible:false,
+      showQrcode:false,
     }
     this.timeout = null;
   }
@@ -39,6 +40,10 @@ export default class App extends Component<Props> {
   componentWillUnmount() {
     this.timeout && clearTimeout(this.timeout);
     this.timeout = null;
+  }
+
+  handleShowQrcode = async () => {
+    this.setState({showQrcode:!this.state.showQrcode});
   }
 
   //本地存储的imei
@@ -83,51 +88,49 @@ export default class App extends Component<Props> {
 
   render() {
     let { height,width } = Dimensions.get('window');
+    let { showQrcode } = this.state;
     return (
       <View>
-        <VideoPlayer
-          autoplay
-          loop
-          hideControlsOnStart
-          thumbnail={require('./src/images/video_first_screen.png')}
-          video={require('./src/videos/propagation.mp4')}
-          videoWidth={width}
-          videoHeight={height*0.7}
-          style={{backgroundColor: '#ffffff'}}
-        />
-        <ImageBackground style={{height: height*0.3,flexDirection: 'row'}} source={require('./src/images/bg_bottom.png')} resizeMode="stretch">
-          <View style={{flex:1,justifyContent: 'center'}}>
-            <View style={{flexDirection: 'row',marginLeft: 100}}>
-              <Image style={{width: 50,height: 50,marginRight: 10}} source={require('./src/images/dianhua.png')} resizeMode="contain"/>
-              <Text style={{fontSize: 45,color: '#ffffff'}}>4000574355</Text>
+          {
+            !showQrcode ?
+            <ImageBackground style={{height: height,flexDirection: 'row'}} source={require('./src/images/new_bg.png')} resizeMode="stretch">
+              <TouchableOpacity activeOpacity={1} onPress={this.handleShowQrcode} style={{flex:1}}></TouchableOpacity>
+            </ImageBackground>
+            :
+            <TouchableOpacity activeOpacity={1} onPress={this.handleShowQrcode} style={{height: height}}>
+              <View style={{flex:1,justifyContent: 'center',alignItems: 'center',backgroundColor: '#000000'}}>
+                <View style={{backgroundColor: '#ffffff',padding: 20}}>
+                  <QRCode
+                    value={this.state.qrcode}
+                    size={230}/>
+                </View>
+              </View>
+              <View style={{height: 0.15*height,justifyContent: 'center',alignContent: 'center'}}>
+                <View style={{alignItems: 'center'}}>
+                  <Text style={{fontSize: 30,fontWeight: 'bold'}}>点击屏幕显示二维码</Text>
+                </View>
+                <View style={{flexDirection: 'row',justifyContent: 'center',marginTop: 20}}>
+                  <Image style={{width: 20,height: 20,marginRight: 10}} source={require('./src/images/space_logo.png')} resizeMode="contain"/>
+                  <Text style={{fontSize: 18}}>客服电话：400-1094484</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          }
+          <Modal visible={this.state.modalVisible} transparent={true}>
+            <View style={{backgroundColor: 'rgba(0,0,0,0.3)',flex:1,justifyContent: 'center',alignItems: 'center'}}>
+              <View style={{backgroundColor: '#ffffff',width: width*0.8,marginTop: 100,padding: 20}}>
+                <TextInput
+                  placeholder="请输入设备的imei"
+                  value={this.state.inputImei}
+                  onChangeText={(inputImei) => this.setState({inputImei})}
+                  style={{borderWidth: 1,borderColor: '#f7f7f7',marginBottom: 100,justifyContent: 'center',alignItems: 'center'}}/>
+                <TouchableOpacity activeOpacity={0.7} onPress={this.handleSaveStorageImei}>
+                  <Text style={{paddingVertical: 8,paddingHorizontal: 20,backgroundColor: '#4c76df',color:'#ffffff',alignSelf: 'center',borderRadius: 5}}>保存</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            <View style={{flexDirection: 'row',marginLeft: 100,marginTop: 60}}>
-              <Image style={{width: 50,height: 50,marginRight: 10}} source={require('./src/images/weixin.png')} resizeMode="contain"/>
-              <Text style={{fontSize: 40,color: '#ffffff'}}>太空侠智能回收</Text>
-            </View>
-          </View>
-          <TouchableOpacity activeOpacity={1} onPress={() => null} onLongPress={() => null} style={{marginHorizontal: 50,justifyContent: 'center',alignItems: 'center'}}>
-            <QRCode
-              value={this.state.qrcode}
-              size={230}/>
-            <Text style={{marginTop: 15,color:'#ffffff',fontSize: 22}}>扫一扫二维码 进行关注</Text>
-          </TouchableOpacity>
-        </ImageBackground>
-        <Modal visible={this.state.modalVisible} transparent={true}>
-          <View style={{backgroundColor: 'rgba(0,0,0,0.3)',flex:1,justifyContent: 'center',alignItems: 'center'}}>
-            <View style={{backgroundColor: '#ffffff',width: width*0.8,marginTop: 100,padding: 20}}>
-              <TextInput
-                placeholder="请输入设备的imei"
-                value={this.state.inputImei}
-                onChangeText={(inputImei) => this.setState({inputImei})}
-                style={{borderWidth: 1,borderColor: '#f7f7f7',marginBottom: 100,justifyContent: 'center',alignItems: 'center'}}/>
-              <TouchableOpacity activeOpacity={0.7} onPress={this.handleSaveStorageImei}>
-                <Text style={{paddingVertical: 8,paddingHorizontal: 20,backgroundColor: '#4c76df',color:'#ffffff',alignSelf: 'center',borderRadius: 5}}>保存</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-      </View>
+          </Modal>
+        </View>
     )
   }
 }
