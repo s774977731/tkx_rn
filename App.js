@@ -28,9 +28,13 @@ export default class App extends Component<Props> {
       qrcode:'',
       inputImei:'',
       modalVisible:false,
-      showQrcode:false,
+      showQrcode:true,
+      showMp4:true,
+      userName:'',
+      second:15,
     }
     this.timeout = null;
+    this.intervalSecond = null;
   }
 
   componentDidMount() {
@@ -39,19 +43,40 @@ export default class App extends Component<Props> {
 
   componentWillUnmount() {
     this.timeout && clearTimeout(this.timeout);
+    this.intervalSecond && clearTimeout(this.intervalSecond);
     this.timeout = null;
+    this.intervalSecond = null;
   }
 
-  handleShowQrcode = async () => {
-    this.setState({showQrcode:!this.state.showQrcode});
+  //点击显示mp4
+  handlePressMp4 = async () => {
+    let storageImei = await AsyncStorage.getItem('imei');
+    this.intervalCloseQrcode();
+    this.handleMakeQrcode(storageImei);
+    this.setState({showMp4:!this.state.showMp4});
+  }
+
+  // 轮训倒计时返回mp4
+  intervalCloseQrcode = () => {
+    let { second } = this.state;
+    if(second == 0) {
+      this.timeout && clearTimeout(this.timeout);
+      this.intervalSecond && clearTimeout(this.intervalSecond);
+      this.timeout = null;
+      this.intervalSecond = null;
+      this.setState({second:15,showMp4:true,showQrcode:true});
+    }else {
+      this.setState({second:this.state.second - 1});
+      this.intervalSecond = setTimeout(() => {
+        this.intervalCloseQrcode();
+      }, 1000);
+    }
   }
 
   //本地存储的imei
   handleStorageImei = async () => {
     let storageImei = await AsyncStorage.getItem('imei');
-    if(storageImei) {
-      this.handleMakeQrcode(storageImei);
-    }else {
+    if(!storageImei) {
       this.setState({modalVisible:true})
     }
   }
@@ -61,7 +86,6 @@ export default class App extends Component<Props> {
     let { inputImei } = this.state;
     await AsyncStorage.setItem('imei',inputImei);
     this.setState({modalVisible:false});
-    this.handleMakeQrcode(inputImei);
   }
 
   // 获取二维码
@@ -70,10 +94,22 @@ export default class App extends Component<Props> {
       url:'/v1/app/scanningcode/',
       params:{imei}
     });
+    console.log(imei);
+    console.log(res);
     if(res) {
       let qrcodeContent = HOST + '/' + res.imei;
       this.setState({qrcode:qrcodeContent});
       console.log(res);
+      if(res.code == 0) {
+        this.setState({showMp4:true,showQrcode:true});
+        this.timeout && clearTimeout(this.timeout);
+        this.timeout = null;
+        return false;
+      }else if(res.code == 1) {
+        this.intervalSecond && clearTimeout(this.intervalSecond);
+        this.intervalSecond = null;
+        this.setState({second:60,showQrcode:false,userName:res.name});
+      }
       this.timeout = setTimeout(() => {
         this.handleMakeQrcode(res.imei || imei);
       }, 2*1000);
@@ -88,33 +124,68 @@ export default class App extends Component<Props> {
 
   render() {
     let { height,width } = Dimensions.get('window');
-    let { showQrcode } = this.state;
+    let { showQrcode,showMp4,second,userName } = this.state;
     return (
       <View>
           {
-            !showQrcode ?
-            <ImageBackground style={{height: height,flexDirection: 'row'}} source={require('./src/images/new_bg.png')} resizeMode="stretch">
-              <TouchableOpacity activeOpacity={1} onPress={this.handleShowQrcode} style={{flex:1}}></TouchableOpacity>
-            </ImageBackground>
+            showMp4 ?
+              <View style={{width: width,height: height,justifyContent: 'center'}}>
+                <View style={{flex:1,backgroundColor: '#000000'}}>
+                  <VideoPlayer
+                    autoplay
+                    loop
+                    hideControlsOnStart
+                    thumbnail={require('./src/images/video_first_screen.png')}
+                    video={require('./src/videos/propagation.mp4')}
+                    videoWidth={width}
+                    videoHeight={height}
+                    style={{backgroundColor: '#ffffff'}}
+                  />
+                </View>
+                <View style={{height: 0.15*height,justifyContent: 'center',alignContent: 'center'}}>
+                  <View style={{alignItems: 'center'}}>
+                    <Text style={{fontSize: 30,fontWeight: 'bold'}}>点击屏幕显示二维码</Text>
+                  </View>
+                  <View style={{flexDirection: 'row',justifyContent: 'center',marginTop: 20}}>
+                    <Image style={{width: 20,height: 20,marginRight: 10}} source={require('./src/images/space_logo.png')} resizeMode="contain"/>
+                    <Text style={{fontSize: 18}}>客服电话：400-1094484</Text>
+                  </View>
+                </View>
+                <TouchableOpacity activeOpacity={1} onPress={this.handlePressMp4} style={{position: 'absolute',left: 0,right: 0,top:0,bottom: 0}}></TouchableOpacity>
+              </View>
             :
-            <TouchableOpacity activeOpacity={1} onPress={this.handleShowQrcode} style={{height: height}}>
-              <View style={{flex:1,justifyContent: 'center',alignItems: 'center',backgroundColor: '#000000'}}>
-                <View style={{backgroundColor: '#ffffff',padding: 20}}>
-                  <QRCode
-                    value={this.state.qrcode}
-                    size={230}/>
-                </View>
-              </View>
-              <View style={{height: 0.15*height,justifyContent: 'center',alignContent: 'center'}}>
-                <View style={{alignItems: 'center'}}>
-                  <Text style={{fontSize: 30,fontWeight: 'bold'}}>点击屏幕显示二维码</Text>
-                </View>
-                <View style={{flexDirection: 'row',justifyContent: 'center',marginTop: 20}}>
-                  <Image style={{width: 20,height: 20,marginRight: 10}} source={require('./src/images/space_logo.png')} resizeMode="contain"/>
-                  <Text style={{fontSize: 18}}>客服电话：400-1094484</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
+            <View>
+              {
+                !showQrcode ?
+                <ImageBackground style={{height: height,flexDirection: 'row'}} source={require('./src/images/new_bg.png')} resizeMode="stretch">
+                  <TouchableOpacity activeOpacity={1} style={{flex:1}}>
+                    <View style={{position: 'absolute',top: '13%',left: '18%'}}>
+                      <Text style={{color:'#ffffff',fontSize: common.scaleSize(36),fontWeight: 'bold'}}>您好！</Text>
+                      <Text style={{color:'#ffffff',fontSize: common.scaleSize(36),fontWeight: 'bold'}}>{userName}</Text>
+                    </View>
+                  </TouchableOpacity>
+                </ImageBackground>
+                :
+                <TouchableOpacity activeOpacity={1} style={{height: height}}>
+                  <View style={{flex:1,justifyContent: 'center',alignItems: 'center',backgroundColor: '#000000'}}>
+                    <View style={{backgroundColor: '#ffffff',padding: 20}}>
+                      <QRCode
+                        value={this.state.qrcode}
+                        size={230}/>
+                    </View>
+                  </View>
+                  <View style={{height: 0.15*height,justifyContent: 'center',alignContent: 'center'}}>
+                    <View style={{alignItems: 'center'}}>
+                      <Text style={{fontSize: 30,fontWeight: 'bold'}}>微信扫描屏幕二维码{second}s</Text>
+                    </View>
+                    <View style={{flexDirection: 'row',justifyContent: 'center',marginTop: 20}}>
+                      <Image style={{width: 20,height: 20,marginRight: 10}} source={require('./src/images/space_logo.png')} resizeMode="contain"/>
+                      <Text style={{fontSize: 18}}>客服电话：400-1094484</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              }
+            </View>
           }
           <Modal visible={this.state.modalVisible} transparent={true}>
             <View style={{backgroundColor: 'rgba(0,0,0,0.3)',flex:1,justifyContent: 'center',alignItems: 'center'}}>

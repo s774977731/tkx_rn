@@ -1,6 +1,7 @@
 import axios from 'axios';
 import {
-  AsyncStorage
+  AsyncStorage,
+  Dimensions
 } from 'react-native';
 import HOST from './proxy.config';
 /**
@@ -43,4 +44,16 @@ export async function ajax(options) {
     console.log('catch',e );
     return false;
   }
+}
+
+export function scaleSize(size,padSize) {
+  let screenW = Dimensions.get('window').width>Dimensions.get('window').height?Dimensions.get('window').height:Dimensions.get('window').width;
+  const phone = screenW<330?330:375;
+  const pad = 1080;
+  return screenW<517?size * screenW / phone:size * 2 * screenW / pad
+  // if(padSize) {
+  //   return screenW<517?size * screenW / phone:padSize * screenW / pad
+  // }else {
+  //   return screenW<517?size * screenW / phone:size * 2 * screenW / pad
+  // }
 }
