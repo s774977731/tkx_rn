@@ -54,6 +54,10 @@ export default class App extends Component<Props> {
     this.intervalBeat = null;
   }
 
+  shouldComponentUpdate() {
+    return true;
+  }
+
   //点击显示mp4
   handlePressMp4 = async () => {
     this.timeout && clearTimeout(this.timeout);
@@ -71,13 +75,13 @@ export default class App extends Component<Props> {
   // 轮训发送心跳
   handleIntervalBeat = async () => {
     this.intervalBeat = setInterval(async () => {
-      let storageImei = await AsyncStorage.getItem('imei');
       this.handleBeat();
     }, 600 * 1000);
   }
 
   //心跳
   handleBeat = async () => {
+    let storageImei = await AsyncStorage.getItem('imei');
     let res = await common.ajax({
       url:'/v1/app/beat/',
       params:{imei:storageImei}
@@ -121,12 +125,13 @@ export default class App extends Component<Props> {
     let { isOffline } = this.state;
     let tempIsOffline = false;
     let connectionInfo = await NetInfo.getConnectionInfo();
+    console.log(connectionInfo.effectiveType == 'none' || connectionInfo.effectiveType == 'unknown')
     if(connectionInfo.effectiveType == 'none' || connectionInfo.effectiveType == 'unknown') {
       tempIsOffline = true;
-      this.setState({isOffline:true});
+      this.setState(Object.assign({}, this.state, { isOffline: true }));
     }else {
       tempIsOffline = false;
-      this.setState({isOffline:false});
+      this.setState(Object.assign({}, this.state, { isOffline: false }));
     }
     if(tempIsOffline && !this.state.showQrcode) {
       setTimeout(() => {
@@ -193,13 +198,16 @@ export default class App extends Component<Props> {
                 style={{backgroundColor: '#ffffff'}}
               />
             </View>
-            <View style={{height: 0.15*height,justifyContent: 'center',alignContent: 'center'}}>
+            <View style={{height: 0.2*height,justifyContent: 'center',alignContent: 'center'}}>
               <View style={{alignItems: 'center'}}>
                 <Text style={{fontSize: 30,fontWeight: 'bold'}}>点击屏幕显示二维码</Text>
               </View>
               <View style={{flexDirection: 'row',justifyContent: 'center',marginTop: 20}}>
                 <Image style={{width: 20,height: 20,marginRight: 10}} source={require('./src/images/space_logo.png')} resizeMode="contain"/>
                 <Text style={{fontSize: 18}}>客服电话：400-1094484</Text>
+              </View>
+              <View>
+                <Text style={{fontSize: 10,alignSelf: 'flex-end',marginTop: 20,marginRight: 30}}>版本号：v1.0.1</Text>
               </View>
             </View>
             <TouchableOpacity activeOpacity={1} onPress={this.handlePressMp4} style={{position: 'absolute',left: 0,right: 0,top:0,bottom: 0}}></TouchableOpacity>
@@ -214,12 +222,12 @@ export default class App extends Component<Props> {
                     <Text style={{color:'#ffffff',fontSize: common.scaleSize(36),fontWeight: 'bold'}}>{userName}</Text>
                   </View>
                 </TouchableOpacity>
-                {this.state.isOffline && <Text style={{position: 'absolute',top: 30,right: 30,fontSize: 30,fontWeight: 'bold',color:'#ffffff'}}>暂无网络，即将退出</Text>}
+                {this.state.isOffline && <Text style={{position: 'absolute',top: 30,right: 30,fontSize: 12,fontWeight: 'bold',color:'#ffffff'}}>暂无网络，即将退出</Text>}
               </ImageBackground>
               :
               <TouchableOpacity activeOpacity={1} style={{height: height}}>
                 <View style={{flex:1,justifyContent: 'center',alignItems: 'center',backgroundColor: '#ffffff'}}>
-                  {this.state.isOffline && <Text style={{position: 'absolute',top: 30,fontSize: 30,fontWeight: 'bold'}}>暂无网络</Text>}
+                  {this.state.isOffline && <Text style={{position: 'absolute',top: 30,fontSize: 12,fontWeight: 'bold',color: '#cccccc'}}>暂无网络</Text>}
                   <View style={{backgroundColor: '#ffffff',padding: 20}}>
                     <QRCode
                       value={this.state.qrcode}
