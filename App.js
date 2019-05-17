@@ -43,6 +43,7 @@ export default class App extends Component<Props> {
   componentDidMount() {
     this.handleStorageImei();
     this.handleIntervalBeat();
+    this.handleNetInfo();
   }
 
   componentWillUnmount() {
@@ -52,10 +53,17 @@ export default class App extends Component<Props> {
     this.timeout = null;
     this.intervalSecond = null;
     this.intervalBeat = null;
+    NetInfo.removeEventListener('connectionChange');
   }
 
-  shouldComponentUpdate() {
-    return true;
+  handleNetInfo = async () => {
+    NetInfo.addEventListener('connectionChange',(info) => {
+      if(info.type == 'none') {
+        this.setState({isOffline:true});
+      }else {
+        this.setState({isOffline:false});
+      }
+    });
   }
 
   //点击显示mp4
@@ -122,18 +130,7 @@ export default class App extends Component<Props> {
 
   // 获取二维码
   handleMakeQrcode = async (imei) => {
-    let { isOffline } = this.state;
-    let tempIsOffline = false;
-    let connectionInfo = await NetInfo.getConnectionInfo();
-    console.log(connectionInfo.effectiveType == 'none' || connectionInfo.effectiveType == 'unknown')
-    if(connectionInfo.effectiveType == 'none' || connectionInfo.effectiveType == 'unknown') {
-      tempIsOffline = true;
-      this.setState(Object.assign({}, this.state, { isOffline: true }));
-    }else {
-      tempIsOffline = false;
-      this.setState(Object.assign({}, this.state, { isOffline: false }));
-    }
-    if(tempIsOffline && !this.state.showQrcode) {
+    if(this.state.isOffline && !this.state.showQrcode) {
       setTimeout(() => {
         this.setState({showMp4:true,showQrcode:true});
         this.timeout && clearTimeout(this.timeout);
