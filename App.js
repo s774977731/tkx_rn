@@ -57,6 +57,13 @@ export default class App extends Component<Props> {
   }
 
   handleNetInfo = async () => {
+    NetInfo.getConnectionInfo().then((info) => {
+      if(info.type == 'none') {
+        this.setState({isOffline:true});
+      }else {
+        this.setState({isOffline:false});
+      }
+    });
     NetInfo.addEventListener('connectionChange',(info) => {
       if(info.type == 'none') {
         this.setState({isOffline:true});
@@ -204,7 +211,7 @@ export default class App extends Component<Props> {
                 <Text style={{fontSize: 18}}>客服电话：400-1094484</Text>
               </View>
               <View>
-                <Text style={{fontSize: 10,alignSelf: 'flex-end',marginTop: 20,marginRight: 30}}>版本号：v1.0.1</Text>
+                <Text style={{fontSize: 10,alignSelf: 'flex-end',marginTop: 20,marginRight: 30}}>版本号：v1.0.4</Text>
               </View>
             </View>
             <TouchableOpacity activeOpacity={1} onPress={this.handlePressMp4} style={{position: 'absolute',left: 0,right: 0,top:0,bottom: 0}}></TouchableOpacity>
