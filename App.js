@@ -157,6 +157,14 @@ export default class App extends Component<Props> {
       let qrcodeContent = HOST + '/' + res.imei;
       this.setState({qrcode:qrcodeContent});
       console.log(res);
+      if(res.timeout) {
+        if(this.state.showMp4 && this.state.showQrcode) return false;
+        this.setState({showMp4:true,showQrcode:true});
+        this.timeout && clearTimeout(this.timeout);
+        this.timeout = null;
+        this.handleBeat();
+        return false;
+      }
       if(res.code == 0) {
         if(this.state.showQrcode && !this.state.showMp4) return false;
         this.setState({showMp4:true,showQrcode:true});
