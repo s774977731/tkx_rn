@@ -29,7 +29,7 @@ export async function ajax(options) {
       method,
       url: finalUrl,
       headers,
-      timeout: 100000,
+      timeout: 3000,
       data: finalParams
     }).then((res) => {
       console.log('请求的url地址：' + finalUrl);
@@ -38,7 +38,7 @@ export async function ajax(options) {
     }).catch((error) => {
       console.log('请求的url地址：' + finalUrl);
       console.log(error);
-      if(error.message.includes('timeout')) {   // 判断请求异常信息中是否含有超时timeout字符串
+      if(error.message == 'Network Error' || error.message.includes('timeout')) {   // 判断请求异常信息中是否含有超时timeout字符串
         return { timeout:true };
       }
       return false;

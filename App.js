@@ -35,6 +35,7 @@ export default class App extends Component<Props> {
       second:15,
       isOffline:false
     }
+    this.index = 1;
     this.timeout = null;
     this.intervalSecond = null;//轮训倒计时
     this.intervalBeat = null;//轮训心跳
@@ -157,20 +158,24 @@ export default class App extends Component<Props> {
       let qrcodeContent = HOST + '/' + res.imei;
       this.setState({qrcode:qrcodeContent});
       console.log(res);
+      // alert(JSON.stringify(res));
       if(res.timeout) {
-        if(this.state.showMp4 && this.state.showQrcode) return false;
-        this.setState({showMp4:true,showQrcode:true});
-        this.timeout && clearTimeout(this.timeout);
-        this.timeout = null;
-        this.handleBeat();
-        return false;
+        this.index += 1;
+        if(this.index > 3) {
+          this.setState({showMp4:true,showQrcode:true});
+          this.timeout && clearTimeout(this.timeout);
+          this.timeout = null;
+          this.handleBeat();
+          this.index = 1;
+          return false;
+        }
+      }
+      if(res.imei) {
+        await AsyncStorage.setItem('imei',res.imei);
       }
       if(res.code == 0) {
         if(this.state.showQrcode && !this.state.showMp4) return false;
         this.setState({showMp4:true,showQrcode:true});
-        if(res.imei) {
-          await AsyncStorage.setItem('imei',res.imei);
-        }
         this.timeout && clearTimeout(this.timeout);
         this.timeout = null;
         this.handleBeat();
@@ -219,7 +224,7 @@ export default class App extends Component<Props> {
                 <Text style={{fontSize: 18}}>客服电话：400-1094484</Text>
               </View>
               <View>
-                <Text style={{fontSize: 10,alignSelf: 'flex-end',marginTop: 20,marginRight: 30}}>版本号：v1.0.4</Text>
+                <Text style={{fontSize: 10,alignSelf: 'flex-end',marginTop: 20,marginRight: 30}}>版本号：v1.0.6</Text>
               </View>
             </View>
             <TouchableOpacity activeOpacity={1} onPress={this.handlePressMp4} style={{position: 'absolute',left: 0,right: 0,top:0,bottom: 0}}></TouchableOpacity>
