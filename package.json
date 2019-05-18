@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
+    "js-base64": "^2.5.1",
     "react": "16.6.3",
     "react-native": "0.58.6",
     "react-native-qrcode": "^0.2.7",

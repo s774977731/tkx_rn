@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   NetInfo
 } from 'react-native';
+import { Base64 } from 'js-base64';
 import VideoPlayer from './npm_package/react-native-video-player.js';
 import QRCode from 'react-native-qrcode';
 import HOST from './src/proxy.config';
@@ -36,12 +37,14 @@ export default class App extends Component<Props> {
       isOffline:false
     }
     this.index = 1;
+    this.qrcodeIndex = 0;
     this.timeout = null;
     this.intervalSecond = null;//轮训倒计时
     this.intervalBeat = null;//轮训心跳
   }
 
   componentDidMount() {
+    this.handleQrcodeIndex();
     this.handleStorageImei();
     this.handleIntervalBeat();
     this.handleNetInfo();
@@ -74,8 +77,19 @@ export default class App extends Component<Props> {
     });
   }
 
+  //二维码index
+  handleQrcodeIndex = async () => {
+    let qrcodeIndex = await AsyncStorage.getItem('qrcodeIndex');
+    if(!qrcodeIndex) {
+      await AsyncStorage.setItem('qrcodeIndex',0);
+    }
+  }
+
   //点击显示mp4
   handlePressMp4 = async () => {
+    let qrcodeIndex = await AsyncStorage.getItem('qrcodeIndex');
+    await AsyncStorage.setItem('qrcodeIndex',Number(qrcodeIndex) + 1);
+    this.qrcodeIndex = await AsyncStorage.getItem('qrcodeIndex');
     this.timeout && clearTimeout(this.timeout);
     this.intervalSecond && clearTimeout(this.intervalSecond);
     this.timeout = null;
@@ -138,6 +152,12 @@ export default class App extends Component<Props> {
 
   // 获取二维码
   handleMakeQrcode = async (imei) => {
+    let qrcodeContent = HOST + '/' + imei + '_tkx_' + this.qrcodeIndex;
+    let base64Content = Base64.encode(qrcodeContent);
+    this.setState({qrcode:base64Content});
+    console.log('base64内容：' + base64Content);
+    console.log('解码base64内容：' + Base64.decode(base64Content));
+    //离线并且在欢迎界面保护
     if(this.state.isOffline && !this.state.showQrcode) {
       setTimeout(() => {
         this.setState({showMp4:true,showQrcode:true});
@@ -149,16 +169,10 @@ export default class App extends Component<Props> {
       return false;
     }
     let res = await common.ajax({
-      url:'/v1/app/scanningcode/',
+      url:'/v1/app/newscanningcode/',
       params:{imei}
     });
-    console.log(imei);
-    console.log(res);
     if(res) {
-      let qrcodeContent = HOST + '/' + res.imei;
-      this.setState({qrcode:qrcodeContent});
-      console.log(res);
-      // alert(JSON.stringify(res));
       if(res.timeout) {
         this.index += 1;
         if(this.index > 3) {
@@ -170,27 +184,22 @@ export default class App extends Component<Props> {
           return false;
         }
       }
-      if(res.imei) {
-        await AsyncStorage.setItem('imei',res.imei);
-      }
-      if(res.code == 0) {
+      if(res.code == 0) {//退出到首页
         if(this.state.showQrcode && !this.state.showMp4) return false;
         this.setState({showMp4:true,showQrcode:true});
         this.timeout && clearTimeout(this.timeout);
         this.timeout = null;
         this.handleBeat();
         return false;
-      }else if(res.code == 1) {
+      }else if(res.code == 1) {//进入欢迎界面
         this.intervalSecond && clearTimeout(this.intervalSecond);
         this.intervalSecond = null;
         this.setState({second:15,showQrcode:false,userName:res.name});
       }
       this.timeout = setTimeout(() => {
-        this.handleMakeQrcode(res.imei || imei);
+        this.handleMakeQrcode(imei);
       }, 2*1000);
     }else {
-      let qrcodeContent = HOST + '/' + imei;
-      this.setState({qrcode:qrcodeContent});
       this.timeout = setTimeout(() => {
         this.handleMakeQrcode(imei);
       }, 2*1000);
@@ -253,7 +262,7 @@ export default class App extends Component<Props> {
                 </View>
                 <View style={{height: 0.15*height,justifyContent: 'center',alignContent: 'center'}}>
                   <View style={{alignItems: 'center'}}>
-                    <Text style={{fontSize: 30,fontWeight: 'bold'}}>微信扫描屏幕二维码{second}s</Text>
+                    <Text style={{fontSize: 30,fontWeight: 'bold'}}>{this.qrcodeIndex}微信扫描屏幕二维码{second}s</Text>
                   </View>
                   <View style={{flexDirection: 'row',justifyContent: 'center',marginTop: 20}}>
                     <Image style={{width: 20,height: 20,marginRight: 10}} source={require('./src/images/space_logo.png')} resizeMode="contain"/>
