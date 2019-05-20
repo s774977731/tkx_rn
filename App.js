@@ -155,10 +155,6 @@ export default class App extends Component<Props> {
     console.log(imei);
     console.log(res);
     if(res) {
-      let qrcodeContent = HOST + '/' + res.imei;
-      this.setState({qrcode:qrcodeContent});
-      console.log(res);
-      // alert(JSON.stringify(res));
       if(res.timeout) {
         this.index += 1;
         if(this.index > 3) {
@@ -172,6 +168,8 @@ export default class App extends Component<Props> {
       }
       if(res.imei) {
         await AsyncStorage.setItem('imei',res.imei);
+        let qrcodeContent = HOST + '/' + res.imei;
+        this.setState({qrcode:qrcodeContent});
       }
       if(res.code == 0) {
         if(this.state.showQrcode && !this.state.showMp4) return false;
@@ -235,7 +233,7 @@ export default class App extends Component<Props> {
                 <Text style={{fontSize: 18}}>客服电话：400-1094484</Text>
               </View>
               <View>
-                <Text style={{fontSize: 10,alignSelf: 'flex-end',marginTop: 20,marginRight: 30}}>版本号：v1.0.7</Text>
+                <Text style={{fontSize: 10,alignSelf: 'flex-end',marginTop: 20,marginRight: 30}}>版本号：v1.0.8</Text>
               </View>
             </View>
             <TouchableOpacity activeOpacity={1} onPress={this.handlePressMp4} style={{position: 'absolute',left: 0,right: 0,top:0,bottom: 0}}></TouchableOpacity>
