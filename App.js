@@ -186,7 +186,11 @@ export default class App extends Component<Props> {
         this.setState({second:15,showQrcode:false,userName:res.name});
       }
       this.timeout = setTimeout(() => {
-        this.handleMakeQrcode(res.imei || imei);
+        if(res.imei) {
+          this.handleMakeQrcode(res.imei || imei);
+        }else {
+          this.handleMakeQrcode(imei);
+        }
       }, 2*1000);
     }else {
       let qrcodeContent = HOST + '/' + imei;
@@ -195,6 +199,13 @@ export default class App extends Component<Props> {
         this.handleMakeQrcode(imei);
       }, 2*1000);
     }
+  }
+
+  // 返回首页
+  handleResetHome = () => {
+    this.setState({showMp4:true,showQrcode:true});
+    this.timeout && clearTimeout(this.timeout);
+    this.timeout = null;
   }
 
   render() {
@@ -224,7 +235,7 @@ export default class App extends Component<Props> {
                 <Text style={{fontSize: 18}}>客服电话：400-1094484</Text>
               </View>
               <View>
-                <Text style={{fontSize: 10,alignSelf: 'flex-end',marginTop: 20,marginRight: 30}}>版本号：v1.0.6</Text>
+                <Text style={{fontSize: 10,alignSelf: 'flex-end',marginTop: 20,marginRight: 30}}>版本号：v1.0.7</Text>
               </View>
             </View>
             <TouchableOpacity activeOpacity={1} onPress={this.handlePressMp4} style={{position: 'absolute',left: 0,right: 0,top:0,bottom: 0}}></TouchableOpacity>
@@ -238,6 +249,9 @@ export default class App extends Component<Props> {
                     <Text style={{color:'#ffffff',fontSize: common.scaleSize(36),fontWeight: 'bold'}}>您好！</Text>
                     <Text style={{color:'#ffffff',fontSize: common.scaleSize(36),fontWeight: 'bold'}}>{userName}</Text>
                   </View>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={this.handleResetHome} style={{position: 'absolute',bottom: 32,right: 20}}>
+                  <Text style={{fontSize: 12,fontWeight: 'bold',backgroundColor: '#12994e',color:'#ffffff',paddingVertical: 2,paddingHorizontal: 5}}>关闭</Text>
                 </TouchableOpacity>
                 {this.state.isOffline && <Text style={{position: 'absolute',top: 30,right: 30,fontSize: 12,fontWeight: 'bold',color:'#ffffff'}}>暂无网络，即将退出</Text>}
               </ImageBackground>
