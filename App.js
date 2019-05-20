@@ -132,7 +132,7 @@ export default class App extends Component<Props> {
   // 保存输入的iemi
   handleSaveStorageImei = async () => {
     let { inputImei } = this.state;
-    await AsyncStorage.setItem('imei',inputImei);
+    await AsyncStorage.setItem('imei',inputImei + '_tkx');
     this.setState({modalVisible:false});
   }
 
@@ -154,48 +154,33 @@ export default class App extends Component<Props> {
     });
     console.log(imei);
     console.log(res);
-    if(res) {
-      if(res.timeout) {
-        this.index += 1;
-        if(this.index > 3) {
-          this.setState({showMp4:true,showQrcode:true});
-          this.timeout && clearTimeout(this.timeout);
-          this.timeout = null;
-          this.handleBeat();
-          this.index = 1;
-          return false;
-        }
-      }
+    if(res.imei) {
+      await AsyncStorage.setItem('imei',res.imei + '_tkx');
+      let qrcodeContent = HOST + '/' + res.imei + '_tkx';
+      this.setState({qrcode:qrcodeContent});
+    }else {
+      let qrcodeContent = HOST + '/' + imei;
+      this.setState({qrcode:qrcodeContent});
+    }
+    this.timeout = setTimeout(() => {
       if(res.imei) {
-        await AsyncStorage.setItem('imei',res.imei);
-        let qrcodeContent = HOST + '/' + res.imei;
-        this.setState({qrcode:qrcodeContent});
+        this.handleMakeQrcode(res.imei + '_tkx');
+      }else {
+        this.handleMakeQrcode(imei);
       }
+    }, 2*1000);
+    if(res) {
       if(res.code == 0) {
         if(this.state.showQrcode && !this.state.showMp4) return false;
         this.setState({showMp4:true,showQrcode:true});
         this.timeout && clearTimeout(this.timeout);
         this.timeout = null;
         this.handleBeat();
-        return false;
       }else if(res.code == 1) {
         this.intervalSecond && clearTimeout(this.intervalSecond);
         this.intervalSecond = null;
         this.setState({second:15,showQrcode:false,userName:res.name});
       }
-      this.timeout = setTimeout(() => {
-        if(res.imei) {
-          this.handleMakeQrcode(res.imei || imei);
-        }else {
-          this.handleMakeQrcode(imei);
-        }
-      }, 2*1000);
-    }else {
-      let qrcodeContent = HOST + '/' + imei;
-      this.setState({qrcode:qrcodeContent});
-      this.timeout = setTimeout(() => {
-        this.handleMakeQrcode(imei);
-      }, 2*1000);
     }
   }
 
