@@ -81,14 +81,14 @@ export default class App extends Component<Props> {
   handleQrcodeIndex = async () => {
     let qrcodeIndex = await AsyncStorage.getItem('qrcodeIndex');
     if(!qrcodeIndex) {
-      await AsyncStorage.setItem('qrcodeIndex',0);
+      await AsyncStorage.setItem('qrcodeIndex','0');
     }
   }
 
   //点击显示mp4
   handlePressMp4 = async () => {
     let qrcodeIndex = await AsyncStorage.getItem('qrcodeIndex');
-    await AsyncStorage.setItem('qrcodeIndex',Number(qrcodeIndex) + 1);
+    await AsyncStorage.setItem('qrcodeIndex',String(Number(qrcodeIndex) + 1));
     this.qrcodeIndex = await AsyncStorage.getItem('qrcodeIndex');
     this.timeout && clearTimeout(this.timeout);
     this.intervalSecond && clearTimeout(this.intervalSecond);
@@ -97,7 +97,8 @@ export default class App extends Component<Props> {
     let storageImei = await AsyncStorage.getItem('imei');
     this.handleBeat();
     this.setState({showMp4:!this.state.showMp4,second:15},() => {
-      this.handleMakeQrcode(storageImei);
+      let imeiTkxIndex = storageImei + '_tkx_' + this.qrcodeIndex;
+      this.handleMakeQrcode(imeiTkxIndex);
       this.intervalCloseQrcode();
     });
   }
@@ -151,12 +152,13 @@ export default class App extends Component<Props> {
   }
 
   // 获取二维码
-  handleMakeQrcode = async (imei) => {
-    let qrcodeContent = HOST + '/' + imei + '_tkx_' + this.qrcodeIndex;
-    let base64Content = Base64.encode(qrcodeContent);
-    this.setState({qrcode:base64Content});
+  handleMakeQrcode = async (imeiTkxIndex) => {
+    let base64Content = Base64.encode(imeiTkxIndex);
+    let finalQrcode = HOST + '/' + base64Content;
+    this.setState({qrcode:finalQrcode});
     console.log('base64内容：' + base64Content);
     console.log('解码base64内容：' + Base64.decode(base64Content));
+    console.log('url地址：' + finalQrcode);
     //离线并且在欢迎界面保护
     if(this.state.isOffline && !this.state.showQrcode) {
       setTimeout(() => {
@@ -169,8 +171,8 @@ export default class App extends Component<Props> {
       return false;
     }
     let res = await common.ajax({
-      url:'/v1/app/newscanningcode/',
-      params:{imei}
+      url:'/v1/app/scanningcode/',
+      params:{imei:imeiTkxIndex}
     });
     if(res) {
       if(res.timeout) {
@@ -197,11 +199,11 @@ export default class App extends Component<Props> {
         this.setState({second:15,showQrcode:false,userName:res.name});
       }
       this.timeout = setTimeout(() => {
-        this.handleMakeQrcode(imei);
+        this.handleMakeQrcode(imeiTkxIndex);
       }, 2*1000);
     }else {
       this.timeout = setTimeout(() => {
-        this.handleMakeQrcode(imei);
+        this.handleMakeQrcode(imeiTkxIndex);
       }, 2*1000);
     }
   }
@@ -213,16 +215,18 @@ export default class App extends Component<Props> {
       <View>
           <View style={{width: width,height: height,justifyContent: 'center'}}>
             <View style={{flex:1,backgroundColor: '#000000'}}>
-              <VideoPlayer
-                autoplay
-                loop
-                hideControlsOnStart
-                thumbnail={require('./src/images/video_first_screen.png')}
-                video={require('./src/videos/propagation.mp4')}
-                videoWidth={width}
-                videoHeight={height}
-                style={{backgroundColor: '#ffffff'}}
-              />
+              {/*
+                <VideoPlayer
+                  autoplay
+                  loop
+                  hideControlsOnStart
+                  thumbnail={require('./src/images/video_first_screen.png')}
+                  video={require('./src/videos/propagation.mp4')}
+                  videoWidth={width}
+                  videoHeight={height}
+                  style={{backgroundColor: '#ffffff'}}
+                />
+                */}
             </View>
             <View style={{height: 0.2*height,justifyContent: 'center',alignContent: 'center'}}>
               <View style={{alignItems: 'center'}}>
