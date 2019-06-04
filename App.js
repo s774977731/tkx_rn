@@ -82,7 +82,7 @@ export default class App extends Component<Props> {
     this.intervalSecond = null;
     let storageImei = await AsyncStorage.getItem('imei');
     this.handleBeat();
-    this.setState({showMp4:!this.state.showMp4,second:15},() => {
+    this.setState({showMp4:false,second:15},() => {
       this.handleMakeQrcode(storageImei);
       this.intervalCloseQrcode();
     });
