@@ -45,6 +45,7 @@ export default class App extends Component<Props> {
     this.handleStorageImei();
     this.handleIntervalBeat();
     this.handleNetInfo();
+    this.handleClearTimeoutInMp4();
   }
 
   componentWillUnmount() {
@@ -72,6 +73,17 @@ export default class App extends Component<Props> {
         this.setState({isOffline:false});
       }
     });
+  }
+
+  // 在mp4界面清楚网络请求
+  handleClearTimeoutInMp4 = () => {
+    setInterval(() => {
+      if(this.state.showMp4 && this.timeout) {
+        console.log('=============清除网络请求=============');
+        this.timeout && clearTimeout(this.timeout);
+        this.timeout = null;
+      }
+    },10*1000);
   }
 
   //点击显示mp4
@@ -151,7 +163,7 @@ export default class App extends Component<Props> {
     let res = await common.ajax({
       url:'/v1/app/scanningcode/',
       params:{imei}
-    });
+    })
     console.log(imei);
     console.log(res);
     if(res.imei) {
@@ -172,10 +184,7 @@ export default class App extends Component<Props> {
     if(res) {
       if(res.code == 0) {
         if(this.state.showQrcode && !this.state.showMp4) return false;
-        this.setState({showMp4:true,showQrcode:true});
-        this.timeout && clearTimeout(this.timeout);
-        this.timeout = null;
-        this.handleBeat();
+        this.handleResetHome();
       }else if(res.code == 1) {
         this.intervalSecond && clearTimeout(this.intervalSecond);
         this.intervalSecond = null;
@@ -189,6 +198,7 @@ export default class App extends Component<Props> {
     this.setState({showMp4:true,showQrcode:true});
     this.timeout && clearTimeout(this.timeout);
     this.timeout = null;
+    this.handleBeat();
   }
 
   render() {
@@ -218,7 +228,7 @@ export default class App extends Component<Props> {
                 <Text style={{fontSize: 18}}>客服电话：400-1094484</Text>
               </View>
               <View>
-                <Text style={{fontSize: 10,alignSelf: 'flex-end',marginTop: 20,marginRight: 30}}>版本号：v1.0.8</Text>
+                <Text style={{fontSize: 10,alignSelf: 'flex-end',marginTop: 20,marginRight: 30}}>版本号：v1.0.9</Text>
               </View>
             </View>
             <TouchableOpacity activeOpacity={1} onPress={this.handlePressMp4} style={{position: 'absolute',left: 0,right: 0,top:0,bottom: 0}}></TouchableOpacity>
