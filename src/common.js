@@ -17,6 +17,7 @@ export async function ajax(options) {
     let url = options.url;
     let method = options.method || 'post';
     let contentType = options.contentType || 'application/json';
+    // let contentType = options.contentType || 'application/x-www-form-urlencoded';
     let loading = options.loading === undefined ? true : false;
     let noToken = options.noToken || false;
     let tempobj = '';

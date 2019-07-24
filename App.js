@@ -144,7 +144,7 @@ export default class App extends Component<Props> {
   // 保存输入的iemi
   handleSaveStorageImei = async () => {
     let { inputImei } = this.state;
-    await AsyncStorage.setItem('imei',inputImei + '_tkx');
+    await AsyncStorage.setItem('imei',inputImei);
     this.setState({modalVisible:false});
   }
 
@@ -160,37 +160,49 @@ export default class App extends Component<Props> {
       },5*1000);
       return false;
     }
+    //二维码是否使用
     let res = await common.ajax({
-      url:'/v1/app/scanningcode/',
+      url:'/checkQrcodeUse',
       params:{imei}
     })
     console.log(imei);
     console.log(res);
-    if(res.imei) {
-      await AsyncStorage.setItem('imei',res.imei + '_tkx');
-      let qrcodeContent = HOST + '/' + res.imei + '_tkx';
-      this.setState({qrcode:qrcodeContent});
-    }else {
-      let qrcodeContent = HOST + '/' + imei;
-      this.setState({qrcode:qrcodeContent});
-    }
+    let qrcodeContent = HOST + '/' + imei;
+    this.setState({qrcode:qrcodeContent});
     this.timeout = setTimeout(() => {
-      if(res.imei) {
-        this.handleMakeQrcode(res.imei + '_tkx');
-      }else {
         this.handleMakeQrcode(imei);
-      }
     }, 2*1000);
     if(res) {
-      if(res.code == 0) {
+      if(res.data.code == 0) {
         if(this.state.showQrcode && !this.state.showMp4) return false;
         this.handleResetHome();
-      }else if(res.code == 1) {
+      }else if(res.data.code == 1) {
+        this.timeout && clearTimeout(this.timeout);
         this.intervalSecond && clearTimeout(this.intervalSecond);
+        this.timeout = null;
         this.intervalSecond = null;
         this.setState({second:15,showQrcode:false,userName:res.name});
+        this.checkIsFinish(imei);
       }
     }
+  }
+
+  //轮训判断投递是否结束
+  checkIsFinish = async (imei) => {
+      let res = await common.ajax({
+        url:'/checkEndDelivery',
+        params:{imei}
+      })
+      if(res.data.code == 0) {
+          setTimeout(() => {
+              this.checkIsFinish(imei)
+          }, 1*1000);
+      }else if(res.data.code == 1){
+          setTimeout(() => {
+              this.handleResetHome();
+              console.log('回到了首页');
+          }, 1*1000);
+      }
   }
 
   // 返回首页
