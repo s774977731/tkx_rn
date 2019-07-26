@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import VideoPlayer from './npm_package/react-native-video-player.js';
 import QRCode from 'react-native-qrcode';
+import { Base64 } from 'js-base64';
 import HOST from './src/proxy.config';
 
 type Props = {};
@@ -167,7 +168,10 @@ export default class App extends Component<Props> {
     })
     console.log(imei);
     console.log(res);
-    let qrcodeContent = HOST + '/' + imei;
+    let obj = JSON.stringify({ imei,time:new Date().getTime() });
+    let base64Content = Base64.encode(obj);
+    let qrcodeContent = HOST + '/' + base64Content;
+    console.log(qrcodeContent);
     this.setState({qrcode:qrcodeContent});
     this.timeout = setTimeout(() => {
         this.handleMakeQrcode(imei);
