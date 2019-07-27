@@ -95,8 +95,15 @@ export default class App extends Component<Props> {
     this.intervalSecond = null;
     let storageImei = await AsyncStorage.getItem('imei');
     this.handleBeat();
+    //获取返回的系统时间
+    let res = await common.ajax({
+      url:'/getSystemTime',
+      method:'get',
+    });
+    console.log(res);
+    let timesteap = res.data;
     this.setState({showMp4:false,second:15},() => {
-      this.handleMakeQrcode(storageImei);
+      this.handleMakeQrcode(storageImei,timesteap);
       this.intervalCloseQrcode();
     });
   }
@@ -150,7 +157,7 @@ export default class App extends Component<Props> {
   }
 
   // 获取二维码
-  handleMakeQrcode = async (imei) => {
+  handleMakeQrcode = async (imei,timesteap) => {
     if(this.state.isOffline && !this.state.showQrcode) {
       setTimeout(() => {
         this.setState({showMp4:true,showQrcode:true});
@@ -168,13 +175,14 @@ export default class App extends Component<Props> {
     })
     console.log(imei);
     console.log(res);
-    let obj = JSON.stringify({ imei,time:new Date().getTime() });
+    let obj = JSON.stringify({ imei,time:timesteap });
+    console.log(obj);
     let base64Content = Base64.encode(obj);
     let qrcodeContent = HOST + '/' + base64Content;
     console.log(qrcodeContent);
     this.setState({qrcode:qrcodeContent});
     this.timeout = setTimeout(() => {
-        this.handleMakeQrcode(imei);
+        this.handleMakeQrcode(imei,timesteap);
     }, 2*1000);
     if(res) {
       if(res.data.code == 0) {
