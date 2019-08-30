@@ -61,6 +61,7 @@ export default class App extends Component<Props> {
 
   handleNetInfo = async () => {
     NetInfo.getConnectionInfo().then((info) => {
+      console.log(info);
       if(info.type == 'none') {
         this.setState({isOffline:true});
       }else {
@@ -89,19 +90,23 @@ export default class App extends Component<Props> {
 
   //点击显示mp4
   handlePressMp4 = async () => {
+    let storageImei = await AsyncStorage.getItem('imei');
+    let timesteap = '';
+    console.log(this.state.isOffline);
+    if(!this.state.isOffline) {//有网情况下
+        this.handleBeat();
+        //获取返回的系统时间
+        let res = await common.ajax({
+          url:'/getSystemTime',
+          method:'get',
+        });
+        console.log(res);
+        timesteap = res.data;
+    }
     this.timeout && clearTimeout(this.timeout);
     this.intervalSecond && clearTimeout(this.intervalSecond);
     this.timeout = null;
     this.intervalSecond = null;
-    let storageImei = await AsyncStorage.getItem('imei');
-    this.handleBeat();
-    //获取返回的系统时间
-    let res = await common.ajax({
-      url:'/getSystemTime',
-      method:'get',
-    });
-    console.log(res);
-    let timesteap = res.data;
     this.setState({showMp4:false,second:15},() => {
       this.handleMakeQrcode(storageImei,timesteap);
       this.intervalCloseQrcode();
@@ -168,18 +173,19 @@ export default class App extends Component<Props> {
       },5*1000);
       return false;
     }
-    //二维码是否使用
-    let res = await common.ajax({
-      url:'/checkQrcodeUse',
-      params:{imei}
-    })
-    console.log(imei);
-    console.log(res);
+    let res = null;
+    if(!this.state.isOffline) {//有网情况下
+        //二维码是否使用
+        res = await common.ajax({
+          url:'/checkQrcodeUse',
+          params:{imei}
+        })
+        console.log(imei);
+        console.log(res);
+    }
     let obj = JSON.stringify({ imei,time:timesteap });
-    console.log(obj);
     let base64Content = Base64.encode(obj);
     let qrcodeContent = HOST + '/' + base64Content;
-    console.log(qrcodeContent);
     this.setState({qrcode:qrcodeContent});
     this.timeout = setTimeout(() => {
         this.handleMakeQrcode(imei,timesteap);
@@ -232,16 +238,16 @@ export default class App extends Component<Props> {
       <View>
           <View style={{width: width,height: height,justifyContent: 'center'}}>
             <View style={{flex:1,backgroundColor: '#000000'}}>
-              <VideoPlayer
-                autoplay
-                loop
-                hideControlsOnStart
-                thumbnail={require('./src/images/video_first_screen.png')}
-                video={require('./src/videos/propagation.mp4')}
-                videoWidth={width}
-                videoHeight={height}
-                style={{backgroundColor: '#ffffff'}}
-              />
+                <VideoPlayer
+                  autoplay
+                  loop
+                  hideControlsOnStart
+                  thumbnail={require('./src/images/video_first_screen.png')}
+                  video={require('./src/videos/propagation.mp4')}
+                  videoWidth={width}
+                  videoHeight={height}
+                  style={{backgroundColor: '#ffffff'}}
+                />
             </View>
             <View style={{height: 0.2*height,justifyContent: 'center',alignContent: 'center'}}>
               <View style={{alignItems: 'center'}}>
