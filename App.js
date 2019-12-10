@@ -107,7 +107,7 @@ export default class App extends Component<Props> {
     this.intervalSecond && clearTimeout(this.intervalSecond);
     this.timeout = null;
     this.intervalSecond = null;
-    this.setState({showMp4:false,second:15},() => {
+    this.setState({showMp4:false,second:15,qrcode:''},() => {
       this.handleMakeQrcode(storageImei,timesteap);
       this.intervalCloseQrcode();
     });
