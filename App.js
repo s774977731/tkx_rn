@@ -234,20 +234,27 @@ export default class App extends Component<Props> {
   render() {
     let { height,width } = Dimensions.get('window');
     let { showQrcode,showMp4,second,userName } = this.state;
+    let html = require('./src/html/index.html');
     return (
       <View>
           <View style={{width: width,height: height,justifyContent: 'center'}}>
             <View style={{flex:1,backgroundColor: '#000000'}}>
-                <VideoPlayer
-                  autoplay
-                  loop
-                  hideControlsOnStart
-                  thumbnail={require('./src/images/video_first_screen.png')}
-                  video={require('./src/videos/propagation.mp4')}
-                  videoWidth={width}
-                  videoHeight={height}
-                  style={{backgroundColor: '#ffffff'}}
-                />
+                {/*
+                    <VideoPlayer
+                      autoplay
+                      loop
+                      hideControlsOnStart
+                      thumbnail={require('./src/images/video_first_screen.png')}
+                      video={require('./src/videos/propagation.mp4')}
+                      videoWidth={width}
+                      videoHeight={height}
+                      style={{backgroundColor: '#ffffff'}}
+                    />
+                */}
+                <WebView
+                    source={{uri:'file:///android_asset/html/index.html'}}
+                    //source={require('./src/html/index.html')}
+                    />
             </View>
             <View style={{height: 0.2*height,justifyContent: 'center',alignContent: 'center'}}>
               <View style={{alignItems: 'center'}}>
